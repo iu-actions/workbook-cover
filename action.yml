@@ -1,6 +1,10 @@
 name: IU Workbook Cover
 description: Create your IU Workbook cover with GitHub Actions.
 
+branding:
+  icon: 'book'  
+  color: 'gray-dark'
+
 inputs:
   # student details
   first_name:
