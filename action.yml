@@ -1,0 +1,95 @@
+name: IU Workbook Cover
+description: Create your IU Workbook cover with GitHub Actions.
+
+inputs:
+  # student details
+  first_name:
+    description: The first name of the student
+    required: true
+  last_name:
+    description: The last name of the student
+    required: true
+  email:
+    description: The email of the student
+    required: true
+  id:
+    description: The id of the student
+    required: true
+  degree:
+    description: The degree pursued by the student
+    required: true
+    
+  # course details
+  course_name:
+    description: The name of the course
+    required: true
+  course_id:
+    description: The id of the course
+    required: true
+  professor:
+    description: The professor of the course
+    required: true
+  tutor:
+    description: The tutor of the course
+    required: true
+  
+  # configuration details
+  format_doc:
+    description: Path to the Microsoft Word template of the cover page
+    required: true
+  template_doc:
+    description: Path to the Markdown template of the cover page to define the structure
+    required: true
+  
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Create Configuration
+      run: | 
+        metadata=$(cat << EOF
+        student:
+          name:
+            first: ${{ inputs.first_name }}
+            last: ${{ inputs.last_name }}
+          email: ${{ inputs.email }}
+          id: ${{ inputs.id }}
+          degree: ${{ inputs.degree }}
+        course:
+          name: ${{ inputs.course_name }}
+          id: ${{ inputs.course_id }}
+          person:
+            professor: ${{ inputs.professor }}
+            tutor: ${{ inputs.tutor }}
+        document:
+          build: ${GITHUB_SHA:0:7}
+        EOF
+        )
+        echo -e "$metadata" >> metadata.yml
+      shell: bash
+    - name: Create Cover
+      uses: docker://pandoc/core:2.9
+      with:
+        args: >-
+          --template ${{ inputs.template_doc }}
+          --metadata-file metadata.yml
+          --output cover.md
+          ${{ inputs.template_doc }}
+    - name: Convert Cover to Microsoft Word
+      uses: docker://pandoc/core:2.9
+      with:
+        args: >-
+          --reference-doc=${{ inputs.format_doc }}
+          --output cover.docx
+          cover.md
+    - name: Convert Cover to PDF
+      run: |
+        sudo apt-get install unoconv -y  # Convert .docx to .pdf
+        unoconv cover.docx
+      shell: bash
+    - name: Upload PDF to GitHub Artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: cover
+        path: cover.pdf
