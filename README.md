@@ -18,6 +18,8 @@ This action requires the presence of inputs, which are listed below.
 - `email`: The email of the student. (**required**)
 - `id`: The id of the student. (**required**)
 - `degree`: The degree pursued by the student. (**required**)
+- `semester`: The current semester of the student. (**required**)
+- `address`: The address of the student. (**required**)
 
 - `course_name`: The name of the course. (**required**)
 - `course_id`: The id/number of the course. (**required**)
@@ -34,14 +36,21 @@ This action requires the presence of inputs, which are listed below.
 Below you will find an example of how you can use this action.
 
 ```yaml
-uses: iu-actions/workbook-cover@v1
+uses: iu-actions/workbook-cover@v2
 with:
   # student details
+  id: 12345678
   first_name: John
   last_name: Doe
   email: john.doe@example.edu
-  id: 12345678
   degree: B. Sc. Computer Science
+  semester: 2. Semester
+  
+  # address details
+  address: | 
+    MIT Room 2-245
+    Department of Mathematics
+    Cambridge MA 02139
           
   # course details
   course_name: Linear Algebra I
@@ -50,6 +59,6 @@ with:
   tutor: Jane Doe
           
   # configuration details
-  format_doc: .workbook/cover/format.docx
-  template_doc: .workbook/cover/template.md
+  format_doc: .iu/workbook/cover/format.docx
+  template_doc: .iu/workbook/cover/template.md
   ```
