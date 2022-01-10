@@ -18,6 +18,14 @@ inputs:
   degree:
     description: The degree pursued by the student
     required: true
+  semester:
+    description: The current semester of the student
+    required: true
+    
+  # address details
+  address:
+    description: The address of the student
+    required: true
     
   # course details
   course_name:
@@ -47,7 +55,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Create Configuration
-      run: | 
+      run: |
         metadata=$(cat << EOF
         student:
           name:
@@ -56,6 +64,9 @@ runs:
           email: ${{ inputs.email }}
           id: ${{ inputs.id }}
           degree: ${{ inputs.degree }}
+          semester: ${{ inputs.semester }}
+          address: |
+            $(sed '2,$s/^/    /' < <( echo "${{ inputs.address }}"))
         course:
           name: ${{ inputs.course_name }}
           id: ${{ inputs.course_id }}
@@ -64,20 +75,24 @@ runs:
             tutor: ${{ inputs.tutor }}
         document:
           build: ${GITHUB_SHA:0:7}
+          date:
+            readable: $(date +%d.%m.%Y%n)
+            ddmmyyy: $(date +%d%m%Y%n)
         EOF
         )
         echo -e "$metadata" >> metadata.yml
       shell: bash
     - name: Create Cover
-      uses: docker://pandoc/core:2.9
+      uses: docker://pandoc/core:2.14
       with:
         args: >-
+          --from markdown+hard_line_breaks
           --template ${{ inputs.template_doc }}
           --metadata-file metadata.yml
           --output cover.md
           ${{ inputs.template_doc }}
     - name: Convert Cover to Microsoft Word
-      uses: docker://pandoc/core:2.9
+      uses: docker://pandoc/core:2.14
       with:
         args: >-
           --reference-doc=${{ inputs.format_doc }}
